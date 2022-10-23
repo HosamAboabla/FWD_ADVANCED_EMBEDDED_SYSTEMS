@@ -44,9 +44,52 @@
 #define GetReg(X,Y)				(*((volatile uint32_t*)(((uint32_t)X)+((uint32_t)Y))))
 
 
-void Gpt_Timer1Init(void);
-void Gpt_StartTimer1(void);
-void Gpt_Timer1DelayMs( uint32 msValue );
+
+/******************************************************************************
+* \Syntax          : void Gpt_TimerInit(void)                                   
+* \Description     : Initialize timer                                   
+*                                                                             
+* \Sync\Async      : Synchronous                                               
+* \Reentrancy      : Non-Reentrant                                             
+* \Parameters (in) : None
+* \Parameters (out): None                                                      
+* \Return value:   : None
+*******************************************************************************/
+void Gpt_TimerInit(void);
+
+
+
+
+
+
+
+/******************************************************************************
+* \Syntax          : void Gpt_StartTimer(void)
+* \Description     : Start timer                                   
+*                                                                             
+* \Sync\Async      : Synchronous                                               
+* \Reentrancy      : Reentrant                                             
+* \Parameters (in) : ticks
+* \Parameters (out): None                                                      
+* \Return value:   : None
+*******************************************************************************/
+void Gpt_StartTimer( uint32 ticks );
+
+
+
+
+
+/******************************************************************************
+* \Syntax          : void Gpt_TimerDelayMs( uint32 msValue )                                      
+* \Description     : Polling delay                                   
+*                                                                             
+* \Sync\Async      : Synchronous                                               
+* \Reentrancy      : Reentrant                                             
+* \Parameters (in) : None
+* \Parameters (out): None                                                      
+* \Return value:   : None
+*******************************************************************************/
+void Gpt_TimerDelayMs( uint32 msValue );
 
 /**********************************************************************************************************************
  *  GLOBAL FUNCTION PROTOTYPES

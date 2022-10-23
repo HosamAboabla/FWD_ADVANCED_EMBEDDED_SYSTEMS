@@ -44,29 +44,31 @@
 
 
 /******************************************************************************
-* \Syntax          : Dio_LevelTyp0e Dio_FlipChannel(Dio_ChannelType ChannelId)                                   
-* \Description     : flip value of Dio channel (pin)                                
+* \Syntax          : void Gpt_TimerInit(void)                                   
+* \Description     : Initialize timer                              
 *                                                                             
 * \Sync\Async      : Synchronous                                               
 * \Reentrancy      : Reentrant                                             
-* \Parameters (in) : ChannelId
+* \Parameters (in) : None
 * \Parameters (out): None                                                      
-* \Return value:   : Dio_LevelType
+* \Return value:   : None
 *******************************************************************************/
-void Gpt_Timer1Init(void)
+void Gpt_TimerInit(void)
 {
 	       /* Timer1A timeout flag bit clears*/
 	SYSCTL->RCGCTIMER |= (1<<1);  /*enable clock Timer1 subtimer A in run mode */
 	TIMER1->CTL = 0; /* disable timer1 output */
-	TIMER1->CFG =  0x04; /*select 16-bit configuration option */
+	TIMER1->CFG =  0x0; /*select 32-bit configuration option */
 	TIMER1->TAMR &= ~(1U << 4); // count down
 	TIMER1->TAMR |= 0x2; /*select periodic down counter mode of timer1 */
-	TIMER1->TAILR = 0; // 64000-1 ; /* TimerA counter starting count down value  */
-	TIMER1->TAPR = 250-1; /* TimerA prescaler value */
+	TIMER1->TAILR =  0 ;/* TimerA counter starting count down value  */
+	
+	// TIMER1->TAPR = 250-1; /* TimerA prescaler value */
+	
 	TIMER1->IMR = 0; /* disables TimerA time-out  interrupt mask */
 	
 	
-	GetReg(NVIC,EN0) |= (1 << 21);
+	
 	
 	
 
@@ -77,11 +79,11 @@ void Gpt_Timer1Init(void)
 
 
 
-void Gpt_Timer1DelayMs( uint32 msValue ) {
+void Gpt_TimerDelayMs( uint32 msValue ) {
 		uint32 i;
-		TIMER1->TAPR = 0; 
+		TIMER1->TAPR = 0;  // No prescaler
 		// load timer with counts for 1 ms overflow 
-		TIMER1->TAILR  = 16000-1;
+		TIMER1->TAILR  = 16000 -1;
 			// clear timer timeout flag 
 		TIMER1->ICR = 0x01; 
 		// enable timer for counting 
@@ -99,12 +101,13 @@ void Gpt_Timer1DelayMs( uint32 msValue ) {
 
 
 
-void Gpt_StartTimer1(void)
+void Gpt_StartTimer( uint32 ticks )
 {
 
-		TIMER1->TAILR = ( 1000 / ((62.5* 250)/1000000) )- 1 ;// 64000-1 ;
+		TIMER1->TAILR = ticks;// 64000-1 ;
 		TIMER1->ICR = 0x1;          /* TimerA timeout flag bit clears*/
 		TIMER1->CTL = 0x01;        /* Enable TimerA module */
+		GetReg(NVIC,EN0) |= (1 << 21);
 		TIMER1->IMR = 0x01; /* enable TimerA time-out  interrupt mask */
 
 }
