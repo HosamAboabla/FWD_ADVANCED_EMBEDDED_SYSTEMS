@@ -73,7 +73,7 @@ void Gpt_TimerInit(void);
 * \Parameters (out): None                                                      
 * \Return value:   : None
 *******************************************************************************/
-void Gpt_StartTimer( uint32 ticks );
+void Gpt_StartTimer( uint32 ticks , void (*f)(void) );
 
 
 
