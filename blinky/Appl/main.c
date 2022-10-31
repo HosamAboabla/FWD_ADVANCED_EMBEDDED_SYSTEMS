@@ -48,7 +48,9 @@ int main(void)
 	
 	while(1)
 	{
-
+		// change on and off delay in runtime
+		onTime *= 2;
+		offTime *= 2; 
 		
 		pwmBlink(onTime , offTime );
 		
