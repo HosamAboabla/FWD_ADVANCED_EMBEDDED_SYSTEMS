@@ -54,8 +54,8 @@ int main(void)
 		
 		
 		// change on and off delay in runtime
-		onTime *= 2;
-		offTime *= 2; 
+		// onTime *= 2;
+		// offTime *= 2; 
 		
 		
 		
