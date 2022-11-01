@@ -1,0 +1,15 @@
+
+*.hosam
+*.uvoptx
+*.scvd
+*.map
+*.htm
+*.d
+*.o
+*.dep
+*.0
+./RTE/*
+blinky/RTE/*
+*.axf
+*.uvprojx
+*.lnp
