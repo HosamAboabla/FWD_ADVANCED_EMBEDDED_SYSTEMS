@@ -36,21 +36,28 @@ static Port_ConfigType pinf7 = {
 
 int main(void)
 {
-	
+	SysTick_Config( SystemCoreClock / 1000 ); 
 	
 	Port_ConfigType ConfigPtr[]  = { pinf0 , pinf7 };
 	Port_Init(ConfigPtr , 2);
 	
-	uint32 onTime = 2000 , offTime = 1000;
+	uint32 onTime = 1000 , offTime = 1000;
 
 	Gpt_TimerInit();
 		
 	
 	while(1)
 	{
-
+		
 		
 		pwmBlink(onTime , offTime );
+		
+		
+		// change on and off delay in runtime
+		onTime *= 2;
+		offTime *= 2; 
+		
+		
 		
 		
 		
@@ -69,4 +76,5 @@ void pwmBlink(uint32 onTime , uint32 offTime)
 		Dio_WriteChannel(Dio_PortF , Dio_Pin0 , Dio_LevelLow); // Turn LED off 
 		Gpt_TimerDelayms( offTime  ); // Off Delay
 }
+
 
