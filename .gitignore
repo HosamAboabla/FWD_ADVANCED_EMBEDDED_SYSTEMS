@@ -1,15 +1,8 @@
 
-*.hosam
-*.uvoptx
-*.scvd
-*.map
-*.htm
-*.d
-*.o
-*.dep
-*.0
-./RTE/*
 blinky/RTE/*
-*.axf
+blinky/Objects/*
+blinky/Listings/*
+blinky/blinky.uvguix.hosam
+*.uvoptx
 *.uvprojx
-*.lnp
+*.scvd
