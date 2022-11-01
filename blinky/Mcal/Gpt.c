@@ -125,7 +125,7 @@ void Gpt_StartTimer( uint32 ticks , void (*f)(void) )
 }
 
 
-void TIMER0A_Handler()
+void TIMER1A_Handler()
 { 
 	__timer_callback();
 
