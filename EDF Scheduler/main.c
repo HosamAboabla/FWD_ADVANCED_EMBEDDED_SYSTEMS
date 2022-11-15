@@ -65,6 +65,7 @@
 #include "serial.h"
 #include "GPIO.h"
 
+#include "buffer.h"
 
 /*-----------------------------------------------------------*/
 
@@ -75,9 +76,25 @@
 #define mainCOM_TEST_BAUD_RATE	( ( unsigned long ) 115200 )
 
 
+/*-----------------------------------------------------------*/
+#define BUTTON_1_RISING_MESSAGE	"Button_1_Rising_Edge\n"
+#define BUTTON_1_RISING_MESSAGE_length 21UL
+#define BUTTON_1_FALLING_MESSAGE	"Button_1_Falling_Edge\n"
+#define BUTTON_1_FALLING_MESSAGE_length 22UL
+#define BUTTON_2_RISING_MESSAGE	"Button_2_Rising_Edge\n"
+#define BUTTON_2_RISING_MESSAGE_length 21UL
+#define BUTTON_2_FALLING_MESSAGE	"Button_2_Falling_Edge\n"
+#define BUTTON_2_FALLING_MESSAGE_length 22UL
+#define PERIODIC_TRANSMITTER_MESSAGE	"Periodic_Transmitter\n"
+#define PERIODIC_TRANSMITTER_MESSAGE_length 21UL
+
+
+Buffer_t uart_buffer = { 0 , 49 , { NULL } };
+
+
+
 TaskHandle_t Task_1_Handler = NULL;
 TaskHandle_t Task_2_Handler = NULL;
-
 TaskHandle_t Button_1_Monitor_Handler = NULL;
 TaskHandle_t Button_2_Monitor_Handler = NULL;
 TaskHandle_t Periodic_Transmitter_Handler = NULL;
@@ -103,34 +120,6 @@ static void prvSetupHardware( void );
  */
 
 
-void Task_1( void * pvParameters )
-{
-	int i = 0;
-	int xLastWakeTime = xTaskGetTickCount(); 
-	int startTime = 0  , endTime = 0;
-
-	for( ;; )
-	{
-			/* Task code goes here. */
-		
-		for( i = 0 ; i < 10000000 ; i++)
-		{
-			i = i;
-		}
-		
-		endTime = xTaskGetTickCount();
-		if( ( endTime - startTime ) > 500 )
-		{
-			miss++;
-		}
-		
-		GPIO_write(PORT_0 , PIN4 , PIN_IS_LOW);
-		vTaskDelayUntil( &xLastWakeTime , 500);
-		GPIO_write(PORT_0 , PIN4 , PIN_IS_HIGH);
-		startTime = xTaskGetTickCount();
-	}
-}
-
 
 
 
@@ -139,23 +128,34 @@ void Task_1( void * pvParameters )
 
 void Button_1_Monitor( void * pvParameters )
 {
-	int i = 0;
 	int xLastWakeTime = xTaskGetTickCount(); 
-
+	pinState_t previousStateB1 = PIN_IS_LOW;
+	pinState_t currentStateB1  = PIN_IS_LOW;
 
 	for( ;; )
 	{
 			/* Task code goes here. */
+		Packet_t packet;
+		currentStateB1 = GPIO_read(PORT_0 , PIN14);
+		if( previousStateB1 != currentStateB1 )
+		{
+			if( currentStateB1 == PIN_IS_LOW)
+			{
+				packet.message = BUTTON_1_FALLING_MESSAGE;
+				packet.message_length = BUTTON_1_FALLING_MESSAGE_length;
+				buffer_store(&uart_buffer , &packet);
+			}
+			else
+			{
+				packet.message = BUTTON_1_RISING_MESSAGE;
+				packet.message_length = BUTTON_1_RISING_MESSAGE_length;
+				buffer_store(&uart_buffer , &packet);
+			}
+		}
 		
-		// for( i = 0 ; i < 10000000 ; i++)
-		// {
-		// 	i = i;
-		// }
-		
-		
-		GPIO_write(PORT_0 , PIN6 , PIN_IS_LOW);
+
 		vTaskDelayUntil( &xLastWakeTime , 50);
-		GPIO_write(PORT_0 , PIN6 , PIN_IS_HIGH);
+		previousStateB1 = currentStateB1;
 
 	}
 }
@@ -163,22 +163,35 @@ void Button_1_Monitor( void * pvParameters )
 
 void Button_2_Monitor( void * pvParameters )
 {
-	int i = 0;
 	int xLastWakeTime = xTaskGetTickCount(); 
+	pinState_t previousStateB2 = PIN_IS_LOW;
+	pinState_t currentStateB2  = PIN_IS_LOW;
 
 	for( ;; )
 	{
 			/* Task code goes here. */
-		
-		for( i = 0 ; i < 100000 ; i++)
+		Packet_t packet;
+		currentStateB2 = GPIO_read(PORT_0 , PIN15);
+		if( previousStateB2 != currentStateB2 )
 		{
-			i = i;
+			if( currentStateB2 == PIN_IS_LOW)
+			{
+				packet.message = BUTTON_2_FALLING_MESSAGE;
+				packet.message_length = BUTTON_2_FALLING_MESSAGE_length;
+				buffer_store(&uart_buffer , &packet);
+			}
+			else
+			{
+				packet.message = BUTTON_2_RISING_MESSAGE;
+				packet.message_length = BUTTON_2_RISING_MESSAGE_length;
+				buffer_store(&uart_buffer , &packet);
+			}
 		}
-
 		
-		GPIO_write(PORT_0 , PIN3 , PIN_IS_LOW);
+
 		vTaskDelayUntil( &xLastWakeTime , 50);
-		GPIO_write(PORT_0 , PIN3 , PIN_IS_HIGH);
+		previousStateB2 = currentStateB2;
+
 	}
 }
 
@@ -187,20 +200,13 @@ void Periodic_Transmitter( void * pvParameters )
 {
 	int i = 0;
 	int xLastWakeTime = xTaskGetTickCount(); 
-
+	Packet_t packet;
+	packet.message =PERIODIC_TRANSMITTER_MESSAGE;
+	packet.message_length =PERIODIC_TRANSMITTER_MESSAGE_length;
 	for( ;; )
 	{
-			/* Task code goes here. */
-		
-		// for( i = 0 ; i < 100000 ; i++)
-		// {
-		// 	i = i;
-		// }
-
-		
-		GPIO_write(PORT_0 , PIN4 , PIN_IS_LOW);
+		buffer_store(&uart_buffer , &packet);
 		vTaskDelayUntil( &xLastWakeTime , 100);
-		GPIO_write(PORT_0 , PIN4 , PIN_IS_HIGH);
 	}
 }
 
@@ -211,20 +217,17 @@ void Uart_Receiver( void * pvParameters )
 {
 	int i = 0;
 	int xLastWakeTime = xTaskGetTickCount(); 
-
+	Packet_t packet;
 	for( ;; )
 	{
-			/* Task code goes here. */
 		
-		// for( i = 0 ; i < 100000 ; i++)
-		// {
-		// 	i = i;
-		// }
+		if ( buffer_restore(&uart_buffer , &packet) == BUFFER_SUCCESS)
+		{
+			vSerialPutString( packet.message,packet.message_length );
+		}
 
 		
-		GPIO_write(PORT_0 , PIN5 , PIN_IS_LOW);
 		vTaskDelayUntil( &xLastWakeTime , 20);
-		GPIO_write(PORT_0 , PIN5 , PIN_IS_HIGH);
 	}
 }
 
@@ -283,8 +286,6 @@ int main( void )
 
 	
     /* Create Tasks here */
-		
-		
 
 		xTaskPeriodicCreate(
 								Button_1_Monitor,       /* Function that implements the task. */
